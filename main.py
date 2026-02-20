@@ -1,38 +1,42 @@
-# To run and test the code you need to update 4 places:
-# 1. Change MY_EMAIL/MY_PASSWORD to your own details.
-# 2. Go to your email provider and make it allow less secure apps.
-# 3. Update the SMTP ADDRESS to match your email provider.
-# 4. Update birthdays.csv to contain today's month and day.
-# See the solution video in the 100 Days of Python Course for explainations.
-
-
-from datetime import datetime
-import pandas
+import pandas as pd
 import random
 import smtplib
-import os
+import datetime as dt
 
-# import os and use it to get the Github repository secrets
-MY_EMAIL = os.environ.get("MY_EMAIL")
-MY_PASSWORD = os.environ.get("MY_PASSWORD")
+MY_EMAIL = "szymosprusinos@gmail.com"
+PASSWORD = "wgwvavxfmqgagygd"
 
-today = datetime.now()
-today_tuple = (today.month, today.day)
+NOW = dt.datetime.now()
+CURRENT_MONTH = NOW.month
+CURRENT_DAY = NOW.day
 
-data = pandas.read_csv("birthdays.csv")
-birthdays_dict = {(data_row["month"], data_row["day"])                  : data_row for (index, data_row) in data.iterrows()}
-if today_tuple in birthdays_dict:
-    birthday_person = birthdays_dict[today_tuple]
-    file_path = f"letter_templates/letter_{random.randint(1, 3)}.txt"
-    with open(file_path) as letter_file:
-        contents = letter_file.read()
-        contents = contents.replace("[NAME]", birthday_person["name"])
+data = pd.read_csv("birthdays.csv")
+data_dict = data.to_dict(orient="records")
 
-    with smtplib.SMTP("YOUR EMAIL PROVIDER SMTP SERVER ADDRESS") as connection:
-        connection.starttls()
-        connection.login(MY_EMAIL, MY_PASSWORD)
-        connection.sendmail(
-            from_addr=MY_EMAIL,
-            to_addrs=birthday_person["email"],
-            msg=f"Subject:Happy Birthday!\n\n{contents}"
-        )
+letters = []
+with open("letter_1.txt") as l_1:
+    letter_1 = l_1.read()
+    letters.append(letter_1)
+with open("letter_2.txt") as l_2:
+    letter_2 = l_2.read()
+    letters.append(letter_2)
+with open("letter_3.txt") as l_3:
+    letter_3 = l_3.read()
+    letters.append(letter_3)
+
+for d in data_dict:
+    if d["day"] == CURRENT_DAY and d["month"] == CURRENT_MONTH:
+        pick_letter = random.choice(letters)
+        converted_letter = pick_letter.replace("[NAME]", f"{d["name"]}")
+        with smtplib.SMTP_SSL("smtp.gmail.com", port=465) as connection:
+            connection.login(user=MY_EMAIL, password=PASSWORD)
+            connection.sendmail(
+                from_addr=MY_EMAIL,
+                to_addrs=f"{d["email"]}",
+                msg=f"Subject:Birthday wishes\n\n{converted_letter}")
+        print("E-mail sent.")
+
+
+
+
+
