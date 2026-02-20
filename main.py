@@ -30,7 +30,7 @@ for d in data_dict:
         pick_letter = random.choice(letters)
         converted_letter = pick_letter.replace("[NAME]", f"{d["name"]}")
         with smtplib.SMTP_SSL("smtp.gmail.com", port=465) as connection:
-            connection.login(user=MY_EMAIL, password=PASSWORD)
+            connection.login(user=MY_EMAIL, password=MY_PASSWORD)
             connection.sendmail(
                 from_addr=MY_EMAIL,
                 to_addrs=f"{d["email"]}",
